@@ -1,0 +1,12 @@
+-include Makefile.def
+
+# source file
+C_SOURCE_FILES += \
+$(abspath app/main.c) \
+
+
+# includes common to all targets
+INC_PATHS += -I$(abspath src)
+INC_PATHS += -I$(abspath app)
+
+
