@@ -31,7 +31,7 @@ endif
 # Sorting removes duplicates
 BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LISTING_DIRECTORY) )
 
-CFLAGS = -Werror -Wall -fPIC -Wformat=0
+CFLAGS = -Wall -fPIC -Wformat=0
 
 #lc 是link libc
 #lm 是link libm	-lm选项告诉编译器，我们程序中用到的数学函数要到这个库文件里找
