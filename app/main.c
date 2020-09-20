@@ -2,72 +2,57 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <poll.h>
-#include <sys/select.h>
-#include <sys/epoll.h>
-#include <fcntl.h>
+#include "fcntl.h"
 
 //用户自定义头文件
 #define TRACE_MODULE    "main.c"
 #include <trace.h>
 #include <user_util.h>
 
-#define MAX_EVENTS	10
-static 	int fd;
-
-static void  signal_handler(int sig)
-{
-	uint8_t read_buf[255];
-	int read_sz = 0;
-
-	read_sz = read(fd,read_buf,sizeof(read_buf));		//必须启动读函数，让底层的阻塞的条件复位为false
-	if(read_sz > 0)
-	{
-		trace_debug("receive event queue %d data:",read_sz);
-		trace_dump(read_buf,read_sz);
-	}
-	else
-	{
-		trace_debugln("no any data in event queue");
-	}
-}
 
 int main(int argc , char *argv[])
 {
-	int flags = 0;
+	int fd;
+	int err_code = 0;
 
-	if(argc != 2)
-	{
-		trace_errorln("Invalid parameter");
-		return -1;
-	}
+	uint8_t tx_buff[1];
 
-	fd = open(argv[1],O_RDWR);		//阻塞式访问
+	if( 3 != argc )
+    {
+        trace_errorln("Error usage !");
+        return -1 ;
+    }
+
+	char *filename = argv[1];
+
+	fd = open(filename , O_RDWR);
 	if(fd < 0)
 	{
-		trace_errorln("open %s file error",argv[1]);
-
-		return -1;
+		trace_errorln("Fail:file %s open \n",filename);
+        return -1 ;
 	}
 
-	fcntl(fd,F_SETOWN,getpid());		//获取文件描述符异步I/O所有权
-	flags = fcntl(fd,F_GETFL);			//获得文件状态标记
-	fcntl(fd,F_SETFL,flags | FASYNC);	//设置文件状态标记
+	tx_buff[0] = atoi( argv[2] );
 
-	signal(SIGIO,signal_handler);		//设置回调函数
+	err_code = write(fd,tx_buff,sizeof(tx_buff));
+    if( err_code < 0 )
+    {
+        trace_errorln("Fail : write data into drv file");
+        close(fd);
+        return -1 ;
+    }
 
-	while(1)
-	{
-		trace_infoln("i am alive");
-		sleep(2);
-	}
+	err_code = close(fd);
+    if( err_code < 0 )
+    {
+        trace_errorln("Fail: close to file %s",filename);
+        return -1 ;
+    }
 
-	close(fd);
-	return 0;
+    return 0 ;
 }
 
