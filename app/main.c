@@ -7,27 +7,29 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include "fcntl.h"
+#include <linux/input.h>
 
 //用户自定义头文件
 #define TRACE_MODULE    "main.c"
 #include <trace.h>
 #include <user_util.h>
 
+static struct input_event m_inputevent;
 
 int main(int argc , char *argv[])
 {
 	int fd;
 	int err_code = 0;
 
-	uint8_t tx_buff[1];
-
-	if( 3 != argc )
+	if( 2 != argc )
     {
         trace_errorln("Error usage !");
         return -1 ;
     }
 
 	char *filename = argv[1];
+
+    memset(&m_inputevent,0,sizeof(m_inputevent));
 
 	fd = open(filename , O_RDWR);
 	if(fd < 0)
@@ -36,22 +38,29 @@ int main(int argc , char *argv[])
         return -1 ;
 	}
 
-	tx_buff[0] = atoi( argv[2] );
-
-	err_code = write(fd,tx_buff,sizeof(tx_buff));
-    if( err_code < 0 )
+	while(1)
     {
-        trace_errorln("Fail : write data into drv file");
-        close(fd);
-        return -1 ;
+        err_code = read(fd, &m_inputevent, sizeof(m_inputevent));
+        trace_infoln("err_code = %d\n",err_code);
+        if(err_code > 0)
+        {
+            switch(m_inputevent.type)
+            {
+                case EV_KEY:
+                    if(m_inputevent.code == KEY_0)
+                    {
+                        trace_infoln("m_inputevent.value = %d\n",m_inputevent.value);
+                    }
+                break;
+
+                default:
+
+                break;
+            }
+        }
     }
 
-	err_code = close(fd);
-    if( err_code < 0 )
-    {
-        trace_errorln("Fail: close to file %s",filename);
-        return -1 ;
-    }
+    close(fd);
 
     return 0 ;
 }
