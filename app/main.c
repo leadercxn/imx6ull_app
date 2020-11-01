@@ -8,18 +8,20 @@
 #include <sys/time.h>
 #include "fcntl.h"
 #include <linux/input.h>
+#include <sys/ioctl.h>
 
 //用户自定义头文件
 #define TRACE_MODULE    "main.c"
 #include <trace.h>
 #include <user_util.h>
 
-static struct input_event m_inputevent;
 
+/**
+ * 在挂载的文件系统中 /etc/init.d/rcS 设了开机自动启动
+ */
 int main(int argc , char *argv[])
 {
 	int fd;
-	int err_code = 0;
 
 	if( 2 != argc )
     {
@@ -29,8 +31,6 @@ int main(int argc , char *argv[])
 
 	char *filename = argv[1];
 
-    memset(&m_inputevent,0,sizeof(m_inputevent));
-
 	fd = open(filename , O_RDWR);
 	if(fd < 0)
 	{
@@ -38,30 +38,10 @@ int main(int argc , char *argv[])
         return -1 ;
 	}
 
-	while(1)
-    {
-        err_code = read(fd, &m_inputevent, sizeof(m_inputevent));
-        trace_infoln("err_code = %d\n",err_code);
-        if(err_code > 0)
-        {
-            switch(m_inputevent.type)
-            {
-                case EV_KEY:
-                    if(m_inputevent.code == KEY_0)
-                    {
-                        trace_infoln("m_inputevent.value = %d\n",m_inputevent.value);
-                    }
-                break;
-
-                default:
-
-                break;
-            }
-        }
-    }
+    write(fd,"\033[9;0]",8);
 
     close(fd);
 
-    return 0 ;
+    return 0;
 }
 
