@@ -16,19 +16,20 @@
 #include <user_util.h>
 
 
-/**
- * 在挂载的文件系统中 /etc/init.d/rcS 设了开机自动启动
- */
 int main(int argc , char *argv[])
 {
 	int fd;
 
     int read_len = 0;
 
-    uint16_t read_buff[3];
-    uint16_t ir = 0;
-    uint16_t als = 0;
-    uint16_t ps = 0;
+    int32_t read_buff[7];
+    int32_t accel_x_adc = 0;
+    int32_t accel_y_adc = 0;
+    int32_t accel_z_adc = 0;
+    int32_t temp_adc = 0;
+    int32_t gyro_x_adc = 0;
+    int32_t gyro_y_adc = 0;
+    int32_t gyro_z_adc = 0;
 
 	if( 2 != argc )
     {
@@ -47,6 +48,8 @@ int main(int argc , char *argv[])
 
     for(;;)
     {
+        memset(read_buff,0,sizeof(read_buff));
+
         read_len = read(fd,read_buff,sizeof(read_buff));
 
         /**
@@ -54,11 +57,24 @@ int main(int argc , char *argv[])
          */
         if(read_len > 0)
         {
-            ir = read_buff[0];
-            als = read_buff[1];
-            ps = read_buff[2];
+            accel_x_adc = read_buff[0];
+            accel_y_adc = read_buff[1];
+            accel_z_adc = read_buff[2];
+            temp_adc =    read_buff[3];
+            gyro_x_adc =  read_buff[4];
+            gyro_y_adc =  read_buff[5];
+            gyro_z_adc =  read_buff[6];
 
-            trace_infoln("ir = %d, als = %d, ps = %d",ir,als,ps);
+            trace_infoln("icm20608 sensor data :");
+            trace_infoln("accel_x_adc = %d",accel_x_adc);
+            trace_infoln("accel_y_adc = %d",accel_y_adc);
+            trace_infoln("accel_z_adc = %d",accel_z_adc);
+            trace_infoln("temp_adc = %d",temp_adc);
+            trace_infoln("gyro_x_adc = %d",gyro_x_adc);
+            trace_infoln("gyro_y_adc = %d",gyro_y_adc);
+            trace_infoln("gyro_z_adc = %d",gyro_z_adc);
+
+            trace_infoln("");
         }
 
         sleep(1);

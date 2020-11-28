@@ -1,1 +1,1 @@
-TARGET = app_i2c_ap3216c
+TARGET = app_spi_icm20608
